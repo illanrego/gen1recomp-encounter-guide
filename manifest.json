@@ -1,0 +1,16 @@
+{
+  "id": "encounter_guide",
+  "name": "Encounter Guide",
+  "version": "0.1.1",
+  "api": 2,
+  "entry": "main.lua",
+  "profile": "content",
+  "category": "TOOL",
+  "game_version": ">=0.0.0-0 <2.0.0",
+  "priority": 100,
+  "dependencies": [],
+  "optional_dependencies": [],
+  "conflicts": [],
+  "affects_link": false,
+  "description": "A precise, read-only encounter guide: Town Map areas split into exact routes, floors, and buildings with level ranges and per-step odds."
+}
