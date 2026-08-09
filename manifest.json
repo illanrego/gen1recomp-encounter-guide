@@ -1,7 +1,7 @@
 {
   "id": "encounter_guide",
   "name": "Encounter Guide",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "api": 2,
   "entry": "main.lua",
   "profile": "content",
@@ -12,5 +12,5 @@
   "optional_dependencies": [],
   "conflicts": [],
   "affects_link": false,
-  "description": "A precise, read-only encounter guide: Town Map areas split into exact routes, floors, and buildings with level ranges and per-step odds."
+  "description": "A map-first wild-encounter guide using the imported ROM's Kanto map, with exact source maps, levels, and odds."
 }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0 — 2026-08-09
+
+- Opens ENCOUNTERS on the imported ROM's Kanto Town Map.
+- Lets the D-pad move only between encounter-bearing markers and A open the exact source-map list.
+- Marks every available encounter location and starts near the player's current map marker.
+- Adds SELECT as a complete list fallback, preserving unmapped encounter sources.
+- Adds package-safe map-screen, navigation, controls, and ROM-asset tests.
+
 ## 0.1.1 — 2026-08-09
 
 - Fixes the ENCOUNTERS screen crash in installed ZIPs.

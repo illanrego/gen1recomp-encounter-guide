@@ -21,15 +21,19 @@ local mod = {
 }
 
 entry()(mod)
-assert(registeredScreens.EncounterGuideAreas, "main must register the area browser screen")
+assert(registeredScreens.EncounterGuideMap, "main must register the Kanto encounter map screen")
+assert(registeredScreens.EncounterGuideAreas, "main must preserve the list fallback screen")
 assert(registeredScreens.EncounterGuideArea, "main must register the selected-area screen")
 assert(registeredScreens.EncounterGuideSource, "main must register the source/method screen")
 assert(registeredScreens.EncounterGuideMethod, "main must register the method species-list screen")
 assert(registeredScreens.EncounterGuideSpecies, "main must register the exact species screen")
 assert(wrappedHook and wrappedHook.hook == "ui.start_menu.items", "main must extend the START menu through its public hook")
 
-local output = wrappedHook.callback(function(_, items) return items end, {}, {
+local game = {}
+local output = wrappedHook.callback(function(_, items) return items end, game, {
   { label = "ITEM" }, { label = "SAVE" },
 })
 assert(output[2].label == "ENCOUNTERS", "ENCOUNTERS must appear before SAVE")
 assert(output[3].label == "SAVE", "the existing SAVE entry must be preserved")
+output[2].onSelect()
+assert(game.pushedScreen == "EncounterGuideMap", "ENCOUNTERS must open the Kanto encounter map")

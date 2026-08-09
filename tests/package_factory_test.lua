@@ -34,8 +34,13 @@ local game = {
 }
 
 package.loaded["lib.screens"] = nil
+package.loaded["lib.map_screen"] = nil
 local originalPath = package.path
 package.path = "/nonexistent/?.lua;/nonexistent/?/init.lua"
+local mapOk, mapResult = pcall(definitions.EncounterGuideMap.new, game)
+assert(mapOk, "installed map factory must be self-contained: " .. tostring(mapResult))
+assert(mapResult.locations and mapResult.locations[1] and mapResult.locations[1].name == "MT.MOON",
+  "installed map factory must build encounter-bearing Town Map locations")
 local ok, result = pcall(definitions.EncounterGuideAreas.new, game)
 if ok then
   local area = result.items[1].value
