@@ -1,36 +1,125 @@
-# Encounter Guide
+# 🗺️ Encounter Guide
 
-A read-only encounter guide for Gen1Recomp v0.1.75+.
+**A map-first wild-encounter guide for Gen1Recomp.** Walk the real Kanto Town Map, hop between encounter-bearing locations, and drill down to exact routes, floors, and buildings — with truthful level ranges and per-step odds derived from *your* imported ROM.
 
-Open it with **START → ENCOUNTERS**.
+![API 2](https://img.shields.io/badge/mod%20API-2-8b5cf6) ![Profile: Content](https://img.shields.io/badge/profile-content-10b981) ![Read-only](https://img.shields.io/badge/read--only-✓-f59e0b) ![Tests](https://img.shields.io/badge/tests-7%20files%20passing-22c55e) ![Platform](https://img.shields.io/badge/platform-desktop%20%2B%20Android-3b82f6)
 
-## What it shows
+---
 
-- Town-Map-aligned locations, without hard-coded Red/Blue/Yellow data.
-- Explicit source maps below each location: `-- MT. MOON 1F`, `-- MT. MOON B1F`, `-- ROUTE 3`, and so on.
-- LAND and WATER/SURF tables separately.
-- Exact Pokémon level ranges in the compact view.
-- Every individual level plus its exact chance per movement step in the detail view.
+## The problem it solves
 
-The mod derives every fact from the player’s locally imported ROM data and merged encounter tables. It does not include ROM content, alter encounter mechanics, write saves, or affect link play.
+Plain encounter lists answer *“what appears here?”* — but never *“where is here?”* Without the map, a list of routes and floors is a phone book you can't navigate. This guide makes Kanto itself the menu:
 
-## Navigation
+> **START → ENCOUNTERS** drops you on the imported ROM's own Town Map. D-pad between glowing markers, press **A**, and you're inside that location's exact encounter tables — `-- MT. MOON 1F`, `-- MT. MOON B1F`, `-- MT. MOON B2F` as separate, never-merged sources.
+
+## Features
+
+- 🗺️ **The real Kanto map** — artwork and coordinates come from your locally imported ROM. Nothing is bundled or redrawn.
+- 🎯 **Map-first navigation** — only locations with wild encounters are selectable; the cursor snaps between them.
+- 📍 **Exact source identity** — floors, caves, gates, buildings, and Pokémon Centers are never blended. `-- ROUTE 4 POKÉMON CENTER` stays honest about being an interior.
+- 🌿 **LAND and 🌊 WATER/SURF as separate views** — no deceptive merged tables.
+- 📏 **Compact level ranges, full odds on demand** — `ZUBAT Lv. 8-10` up top, then every exact level with its chance per movement step.
+- 🔍 **SELECT opens the complete list** — catches every encounter source, including any that lack Town Map coordinates.
+- 📻 **Pure ROM-derived data** — works with Red, Blue, or Yellow; zero hard-coded species tables; no copyrighted content shipped.
+
+## How it works
 
 ```text
-START → ENCOUNTERS → AREA → -- SOURCE MAP → LAND/WATER → POKÉMON
+your imported ROM
+      │  (Gen1Recomp extraction)
+      ▼
+generated data  ──►  model.lua          ──►  screens (list + detail)
+(encounters,      │   groups sources,        │
+ field/townMap,   │   never merges maps,     ▼
+ pokemon,         │   sums duplicate slots,  ListMenu UI (A open / B back)
+ constants)       └── calculates odds        MapScreen (D-pad cursor)
 ```
 
-Use A to open an entry and B to return one level.
-
-## Scope in v0.1.0
-
-Walking/LAND and Surf/WATER encounter tables are covered. Fishing, static encounters, gifts, trades, prizes, and Game Corner availability are intentionally excluded until each can be presented truthfully as its own acquisition method.
+The mod is read-only: it never touches saves, encounter mechanics, or link state.
 
 ## Install
 
-1. In Gen1Recomp, open **MODS** (F10 on desktop).
-2. Choose **Import mod .zip**.
-3. Select `encounter_guide-0.1.1.zip`.
-4. Enable **Encounter Guide**.
+1. Open **MODS** in Gen1Recomp (`F10` on desktop).
+2. **Import mod .zip** and select `encounter_guide-0.2.0.zip`.
+3. Enable **Encounter Guide**.
 
-Works on Gen1Recomp desktop and Android. No extra setup is required after importing a supported Pokémon Red, Blue, or Yellow ROM.
+Works on desktop and Android. Requires an imported Pokémon Red, Blue, or Yellow ROM.
+
+> 💡 Mods are loaded from the installed copy. After editing source, rebuild (`python3 tools/bundle.py`), repack, and re-import — tests alone don't update a running game.
+
+## Usage
+
+| Input | Action |
+|-------|--------|
+| **D-pad** | Move between encounter-bearing locations on Kanto |
+| **A** | Open the selected location's exact source maps |
+| **A** (in lists) | Drill down: source → LAND/WATER → species → levels |
+| **SELECT** | Jump to the complete location list (incl. unmapped sources) |
+| **B** | Back one level |
+
+```text
+START → ENCOUNTERS
+  → KANTO MAP                (D-pad, A to select)
+    → MT. MOON               (grouped Town Map marker)
+      → -- MT. MOON 1F       (exact source, always separate)
+        → LAND · WATER       (never merged)
+          → ZUBAT  Lv. 8-10  (truthful compact range)
+            → Lv. 8  · 1.95% (exact per-step odds)
+```
+
+## Project layout
+
+```text
+.
+├── main.lua               # self-contained release entry (generated)
+├── lib/
+│   ├── entry.lua          # screen registration + START menu hook  (source of truth)
+│   ├── model.lua          # source grouping, methods, levels, buckets, odds
+│   ├── names.lua          # player-facing map/source labels
+│   ├── screens.lua        # ListMenu-based area/source/method/species screens
+│   └── map_screen.lua     # Town Map viewer: ROM tiles, cursor, markers, controls
+├── tools/bundle.py        # deterministic bundler: lib/ → main.lua
+├── tests/                 # LÖVE test suite (7 files, fixtures + live Blue cache)
+├── manifest.json          # mod metadata (id: encounter_guide)
+├── mod.card               # launcher-facing description
+└── dist/                  # importable release ZIPs
+```
+
+## Development
+
+Requires any LÖVE 11+ runtime (the Gen1Recomp AppImage bundles one) plus the official [`modkit.py`](https://github.com/bryanthaboi/gen1recomp) tooling.
+
+```sh
+# run the test suite (fixtures + your imported Blue cache)
+ENCOUNTER_GUIDE_ROOT="$PWD" love tests/runner
+
+# regenerate main.lua after editing lib/
+python3 tools/bundle.py
+
+# official mod validation, ROM-content lint, and packaging
+modkit validate --base fixture --strict .
+modkit lint .
+modkit pack -o dist/encounter_guide-0.2.0.zip .
+```
+
+Every release gate runs before tagging: **7/7 test files green** → strict loader validation → no-ROM-content lint → clean archive → live in-game smoke test.
+
+## Scope
+
+- **Covered:** walking/LAND and Surf/WATER encounter tables.
+- **Deferred (truthfully labeled later):** fishing, static encounters, gifts, trades, prizes, and Game Corner — each deserves its own honest acquisition method before it appears in the guide.
+
+## Roadmap
+
+- [x] v0.1.0 — exact-source area browser, LAND/WATER separation, odds
+- [x] v0.1.1 — package-safe single-file entry (fixes installed-ZIP crash)
+- [x] v0.2.0 — map-first Kanto navigation on ROM-generated artwork
+- [ ] Red/Yellow data pass on real caches
+- [ ] Fishing as its own method
+- [ ] Player-position highlight when the current map is off-screen
+
+## Credits
+
+- **[Gen1Recomp](https://github.com/bryanthaboi/gen1recomp)** — the decompiled-Gen-1 runtime, public mod API, and UI toolkit this mod is built on.
+- **pret/pokered** — the original disassembly reference behind the data extraction.
+- Built for Illan, who wanted to know what's in the tall grass *before* stepping in it.
