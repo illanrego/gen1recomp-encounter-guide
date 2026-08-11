@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.0 — 2026-08-11
+
+- Adds a HUD size option: SMALL (default), MEDIUM (1.5×), or LARGE (2×), from the Options menu (ENC. GUIDE SIZE).
+
 ## 0.5.0 — 2026-08-11
 
 - Adds HUD display modes: AUTO (show only while standing on tall grass or water, listing just that table), ALWAYS, and OFF — settable in the Options menu (ENC. GUIDE HUD) or cycled with the H key.

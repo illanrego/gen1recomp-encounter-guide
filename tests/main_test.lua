@@ -71,3 +71,14 @@ assert(hudRow.step(hudGame, 1) == true, "stepping right must apply")
 assert(hudRow.value(hudGame) == "ALWAYS", "stepping right cycles AUTO -> ALWAYS")
 assert(hudRow.step(hudGame, 1) == true and hudRow.value(hudGame) == "OFF", "stepping right cycles ALWAYS -> OFF")
 assert(hudRow.step(hudGame, -1) == true and hudRow.value(hudGame) == "ALWAYS", "stepping left cycles OFF -> ALWAYS")
+
+local sizeRow
+for _, row in ipairs(rowsOut) do
+  if row.id == "encounterGuideSize" then sizeRow = row end
+end
+assert(sizeRow, "the options menu gains an Encounter Guide size row")
+assert(sizeRow.label == "ENC. GUIDE SIZE", "the size row carries a readable label")
+assert(sizeRow.value(hudGame) == "SMALL", "the size row shows the current size")
+assert(sizeRow.step(hudGame, 1) == true and sizeRow.value(hudGame) == "MEDIUM", "stepping right cycles SMALL -> MEDIUM")
+assert(sizeRow.step(hudGame, 1) == true and sizeRow.value(hudGame) == "LARGE", "stepping right cycles MEDIUM -> LARGE")
+assert(sizeRow.step(hudGame, -1) == true and sizeRow.value(hudGame) == "MEDIUM", "stepping left cycles LARGE -> MEDIUM")

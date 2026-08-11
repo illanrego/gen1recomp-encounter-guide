@@ -425,6 +425,7 @@ Hud.__index = Hud
 
 local MAX_LINES = 6
 local MODES = { "auto", "always", "off" }
+local SIZES = { small = 1, medium = 1.5, large = 2 }
 local BALL_SPACE = 15 -- blank glyph (8) + gap (3) + half the ball (4)
 
 local function isHeader(record)
@@ -530,6 +531,17 @@ function Hud:currentMode()
   return "auto"
 end
 
+function Hud:size()
+  local options = (self.game and self.game.save and self.game.save.options) or {}
+  local size = options.encounterGuideSize
+  if SIZES[size] then return size end
+  return "small"
+end
+
+function Hud:sizeFactor()
+  return SIZES[self:size()] or 1
+end
+
 -- H cycles AUTO -> ALWAYS -> OFF with edge detection; the mode persists to
 -- save.options so the options menu and the key stay in sync.
 function Hud:handleToggle()
@@ -600,6 +612,7 @@ end
 -- Screen-space overlay: reset the transform like the engine's own touch
 -- overlay (a render pipeline such as a voxel mod can leave its camera
 -- transform active at render.hud time) and anchor to the window's top-right.
+-- The SMALL geometry is the base unit; MEDIUM/LARGE scale the whole box.
 function Hud:drawBox(lines)
   local graphics = self.graphics
   local font = self.font
@@ -613,15 +626,19 @@ function Hud:drawBox(lines)
   local boxWidth = maxWidth + 4
   local boxHeight = #lines * 8 + 4
   local windowWidth, windowHeight = self.window()
+  local factor = self:sizeFactor()
   graphics.push("all")
   graphics.origin()
+  graphics.scale(factor, factor)
+  local originX = windowWidth / factor - boxWidth - 2
+  local originY = 2
   graphics.setColor(1, 1, 1, 1)
-  graphics.rectangle("fill", windowWidth - boxWidth - 2, 2, boxWidth, boxHeight)
+  graphics.rectangle("fill", originX, originY, boxWidth, boxHeight)
   graphics.setColor(0, 0, 0, 1)
-  graphics.rectangle("line", windowWidth - boxWidth - 2 + 0.5, 2.5, boxWidth - 1, boxHeight - 1)
+  graphics.rectangle("line", originX + 0.5, originY + 0.5, boxWidth - 1, boxHeight - 1)
   for index, record in ipairs(lines) do
-    local x = windowWidth - boxWidth - 2 + 2
-    local y = 2 + 2 + (index - 1) * 8
+    local x = originX + 2
+    local y = originY + 2 + (index - 1) * 8
     font.draw(record.text, x, y)
     if record.owned then
       -- the same owned-ball marker the engine's ListMenu draws
@@ -700,12 +717,21 @@ return function(mod)
   end)
 
   local HUD_MODES = { "auto", "always", "off" }
-  local function hudModeLabel(game)
-    local mode = (((game or {}).save or {}).options or {}).encounterGuideHud
-    for _, candidate in ipairs(HUD_MODES) do
-      if mode == candidate then return candidate:upper() end
+  local HUD_SIZES = { "small", "medium", "large" }
+  local function optionLabel(option, candidates, fallback)
+    for _, candidate in ipairs(candidates) do
+      if option == candidate then return candidate:upper() end
     end
-    return "AUTO"
+    return fallback
+  end
+  local function cycleOption(options, key, candidates, dir)
+    local current = options[key]
+    local index = 1
+    for i, candidate in ipairs(candidates) do
+      if candidate == current then index = i break end
+    end
+    options[key] = candidates[((index - 1 + dir) % #candidates) + 1]
+    return true
   end
   mod.hooks:wrap("ui.options.rows", function(next, game, rows)
     local out = next(game, rows)
@@ -713,17 +739,25 @@ return function(mod)
     out[#out + 1] = {
       id = "encounterGuideHud",
       label = "ENC. GUIDE HUD",
-      value = function(g) return hudModeLabel(g) end,
+      value = function(g)
+        return optionLabel(((g.save or {}).options or {}).encounterGuideHud, HUD_MODES, "AUTO")
+      end,
       step = function(g, dir)
         local options = (g.save or {}).options
         if not options then return false end
-        local current = options.encounterGuideHud
-        local index = 1
-        for i, candidate in ipairs(HUD_MODES) do
-          if candidate == current then index = i break end
-        end
-        options.encounterGuideHud = HUD_MODES[((index - 1 + dir) % #HUD_MODES) + 1]
-        return true
+        return cycleOption(options, "encounterGuideHud", HUD_MODES, dir)
+      end,
+    }
+    out[#out + 1] = {
+      id = "encounterGuideSize",
+      label = "ENC. GUIDE SIZE",
+      value = function(g)
+        return optionLabel(((g.save or {}).options or {}).encounterGuideSize, HUD_SIZES, "SMALL")
+      end,
+      step = function(g, dir)
+        local options = (g.save or {}).options
+        if not options then return false end
+        return cycleOption(options, "encounterGuideSize", HUD_SIZES, dir)
       end,
     }
     return out

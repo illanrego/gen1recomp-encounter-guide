@@ -123,7 +123,7 @@ local graphics = {
   pop = function(mode) transforms[#transforms + 1] = { "pop", mode } end,
   origin = function() transforms[#transforms + 1] = { "origin" } end,
   translate = function(x, y) transforms[#transforms + 1] = { "translate", x, y } end,
-  scale = function(s) transforms[#transforms + 1] = { "scale", s } end,
+  scale = function(sx, sy) transforms[#transforms + 1] = { "scale", sx, sy } end,
   setColor = function(r, g, b, a) colors[#colors + 1] = { r, g, b, a } end,
   rectangle = function(mode, x, y, w, h) rectangles[#rectangles + 1] = { mode, x, y, w, h } end,
   circle = function(mode, x, y, radius) circles[#circles + 1] = { mode, x, y, radius } end,
@@ -289,3 +289,50 @@ eq(#labels, emptyBefore, "maps without encounters draw no HUD")
 local noWorldHud = Hud.new(mod, menuGame, { graphics = graphics, font = font, window = window })
 noWorldHud:draw(viewport)
 eq(#labels, emptyBefore, "a menu on top draws no HUD")
+
+-- sizes: SMALL is the default base geometry; MEDIUM and LARGE scale it
+local function makeSizeGame(mapId, size)
+  local game = makeGame(mapId)
+  game.save.options.encounterGuideSize = size
+  game.save.options.encounterGuideHud = "always"
+  return game
+end
+local function lastScaleCall()
+  local last
+  for _, t in ipairs(transforms) do
+    if t[1] == "scale" then last = t end
+  end
+  return last
+end
+
+eq(Hud.new(mod, makeGame("ROUTE_1"), { graphics = graphics, font = font, window = window }):size(),
+  "small", "the default HUD size is SMALL")
+eq(Hud.new(mod, makeSizeGame("ROUTE_1", "bogus"), { graphics = graphics, font = font, window = window }):size(),
+  "small", "unknown sizes fall back to SMALL")
+eq(Hud.new(mod, makeSizeGame("ROUTE_1", "medium"), { graphics = graphics, font = font, window = window }):size(),
+  "medium", "MEDIUM is honored from save options")
+eq(Hud.new(mod, makeSizeGame("ROUTE_1", "large"), { graphics = graphics, font = font, window = window }):size(),
+  "large", "LARGE is honored from save options")
+
+local mediumHud = Hud.new(mod, makeSizeGame("ROUTE_1", "medium"), {
+  graphics = graphics, font = font, window = window,
+})
+local mediumRectBase = #rectangles
+mediumHud:draw(viewport)
+local mediumScale = lastScaleCall()
+eq(mediumScale[2], 1.5, "MEDIUM scales the box 1.5x horizontally")
+eq(mediumScale[3], 1.5, "MEDIUM scales the box 1.5x vertically")
+local mediumFill = rectangles[mediumRectBase + 1]
+local baseBoxW = font.width("PIDGEY 2") + 4
+eq(mediumFill[2], 176 / 1.5 - baseBoxW - 2, "MEDIUM anchors the box to the window's top-right")
+
+local largeHud = Hud.new(mod, makeSizeGame("ROUTE_1", "large"), {
+  graphics = graphics, font = font, window = window,
+})
+local largeRectBase = #rectangles
+largeHud:draw(viewport)
+local largeScale = lastScaleCall()
+eq(largeScale[2], 2, "LARGE scales the box 2x horizontally")
+eq(largeScale[3], 2, "LARGE scales the box 2x vertically")
+local largeFill = rectangles[largeRectBase + 1]
+eq(largeFill[2], 176 / 2 - baseBoxW - 2, "LARGE anchors the box to the window's top-right")

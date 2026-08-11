@@ -59,12 +59,21 @@ return function(mod)
   end)
 
   local HUD_MODES = { "auto", "always", "off" }
-  local function hudModeLabel(game)
-    local mode = (((game or {}).save or {}).options or {}).encounterGuideHud
-    for _, candidate in ipairs(HUD_MODES) do
-      if mode == candidate then return candidate:upper() end
+  local HUD_SIZES = { "small", "medium", "large" }
+  local function optionLabel(option, candidates, fallback)
+    for _, candidate in ipairs(candidates) do
+      if option == candidate then return candidate:upper() end
     end
-    return "AUTO"
+    return fallback
+  end
+  local function cycleOption(options, key, candidates, dir)
+    local current = options[key]
+    local index = 1
+    for i, candidate in ipairs(candidates) do
+      if candidate == current then index = i break end
+    end
+    options[key] = candidates[((index - 1 + dir) % #candidates) + 1]
+    return true
   end
   mod.hooks:wrap("ui.options.rows", function(next, game, rows)
     local out = next(game, rows)
@@ -72,17 +81,25 @@ return function(mod)
     out[#out + 1] = {
       id = "encounterGuideHud",
       label = "ENC. GUIDE HUD",
-      value = function(g) return hudModeLabel(g) end,
+      value = function(g)
+        return optionLabel(((g.save or {}).options or {}).encounterGuideHud, HUD_MODES, "AUTO")
+      end,
       step = function(g, dir)
         local options = (g.save or {}).options
         if not options then return false end
-        local current = options.encounterGuideHud
-        local index = 1
-        for i, candidate in ipairs(HUD_MODES) do
-          if candidate == current then index = i break end
-        end
-        options.encounterGuideHud = HUD_MODES[((index - 1 + dir) % #HUD_MODES) + 1]
-        return true
+        return cycleOption(options, "encounterGuideHud", HUD_MODES, dir)
+      end,
+    }
+    out[#out + 1] = {
+      id = "encounterGuideSize",
+      label = "ENC. GUIDE SIZE",
+      value = function(g)
+        return optionLabel(((g.save or {}).options or {}).encounterGuideSize, HUD_SIZES, "SMALL")
+      end,
+      step = function(g, dir)
+        local options = (g.save or {}).options
+        if not options then return false end
+        return cycleOption(options, "encounterGuideSize", HUD_SIZES, dir)
       end,
     }
     return out
