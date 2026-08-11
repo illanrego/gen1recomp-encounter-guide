@@ -66,3 +66,39 @@ local overridden = model.buildAreas({
 })
 eq(overridden[1].sources[1].methods.land.species[1].levels[1].conditionalOdds, 0.25,
   "map-specific encounter buckets override the global defaults")
+
+-- mapSummary: the per-map acquisition summary behind the walking HUD
+local hudData = {
+  encounters = {
+    ROUTE_22 = {
+      grass = { rate = 128, slots = {
+        { species = "MANKEY", level = 3 }, { species = "MANKEY", level = 5 },
+        { species = "SPEAROW", level = 3 },
+      } },
+      water = { rate = 64, slots = { { species = "POLIWAG", level = 5 } } },
+    },
+    ROUTE_1 = { grass = { rate = 128, slots = { { species = "PIDGEY", level = 2 } } } },
+    ROUTE_19 = { water = { rate = 64, slots = { { species = "TENTACOOL", level = 5 } } } },
+    PALLET_TOWN = {},
+    EMPTY_ROUTE = { grass = { rate = 0, slots = {} } },
+  },
+  townMap = { locations = {} },
+  pokemon = {
+    MANKEY = { name = "MANKEY" }, SPEAROW = { name = "SPEAROW" },
+    POLIWAG = { name = "POLIWAG" }, PIDGEY = { name = "PIDGEY" },
+    TENTACOOL = { name = "TENTACOOL" },
+  },
+  constants = { encounterBuckets = { 128, 256 } },
+}
+local hudSummary = model.mapSummary(hudData, "ROUTE_22")
+eq(hudSummary.land.species[1].name, "MANKEY", "mapSummary exposes the land acquisition summary")
+eq(hudSummary.land.species[1].minLevel, 3, "mapSummary preserves the land level range minimum")
+eq(hudSummary.land.species[1].maxLevel, 5, "mapSummary preserves the land level range maximum")
+eq(hudSummary.water.species[1].name, "POLIWAG", "mapSummary exposes the water acquisition summary")
+local waterOnly = model.mapSummary(hudData, "ROUTE_19")
+eq(waterOnly.water.species[1].name, "TENTACOOL", "water-only maps keep a water summary")
+eq(waterOnly.land, nil, "water-only maps have no land summary")
+eq(model.mapSummary(hudData, "PALLET_TOWN"), nil, "maps without slots yield no summary")
+eq(model.mapSummary(hudData, "EMPTY_ROUTE"), nil, "zero-rate empty slots yield no summary")
+eq(model.mapSummary(hudData, "SOME_UNKNOWN_MAP"), nil, "unknown maps yield no summary")
+eq(model.mapSummary(hudData, nil), nil, "a nil map id yields no summary")

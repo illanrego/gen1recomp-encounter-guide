@@ -1,10 +1,12 @@
 local root = assert(os.getenv("ENCOUNTER_GUIDE_ROOT"))
-local definitions = {}
+local definitions, wrappedHooks = {}, {}
 local mod = {
   content = { screens = { register = function(_, id, definition)
     definitions[id] = definition
   end } },
-  hooks = { wrap = function() end },
+  hooks = { wrap = function(_, hook, callback)
+    wrappedHooks[hook] = callback
+  end },
   ui = {
     ListMenu = { new = function(game, title, items, options)
       return { game = game, title = title, items = items, options = options }
@@ -62,3 +64,14 @@ package.path = originalPath
 
 assert(ok, "installed screen factories must not depend on the project package.path: " .. tostring(result))
 assert(result and result.title == "ZUBAT", "the package-safe factories must reach the exact species screen")
+
+-- the walking HUD must also load and run in the installed context; a menu
+-- state on top keeps the draw path from touching love.graphics in the runner
+local hudNext = false
+local hudOk, hudErr = pcall(wrappedHooks["render.hud"], function() hudNext = true end, {
+  data = { encounters = {}, field = { townMap = { locations = {} } }, pokemon = {}, constants = {} },
+  overworld = { map = { id = "ROUTE_1" } },
+  stack = { states = { { isOverworld = true }, { isOpaque = true } } },
+}, { gameX = 0, gameY = 0, gameWidth = 160, gameHeight = 144 })
+assert(hudOk, "installed render.hud wrap must be self-contained: " .. tostring(hudErr))
+assert(hudNext, "installed render.hud wrap must call through the hook chain")

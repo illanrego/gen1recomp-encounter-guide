@@ -2,7 +2,7 @@
 
 **A map-first wild-encounter guide for Gen1Recomp.** Walk the real Kanto Town Map, hop between encounter-bearing locations, and drill down to exact routes, floors, and buildings — with truthful level ranges and per-step odds derived from *your* imported ROM.
 
-![API 2](https://img.shields.io/badge/mod%20API-2-8b5cf6) ![Profile: Content](https://img.shields.io/badge/profile-content-10b981) ![Read-only](https://img.shields.io/badge/read--only-✓-f59e0b) ![Tests](https://img.shields.io/badge/tests-7%20files%20passing-22c55e) ![Platform](https://img.shields.io/badge/platform-desktop%20%2B%20Android-3b82f6)
+![API 2](https://img.shields.io/badge/mod%20API-2-8b5cf6) ![Profile: Content](https://img.shields.io/badge/profile-content-10b981) ![Read-only](https://img.shields.io/badge/read--only-✓-f59e0b) ![Tests](https://img.shields.io/badge/tests-8%20files%20passing-22c55e) ![Platform](https://img.shields.io/badge/platform-desktop%20%2B%20Android-3b82f6)
 
 ---
 
@@ -18,6 +18,7 @@ Plain encounter lists answer *“what appears here?”* — but never *“where 
 - 🎯 **Map-first navigation** — only locations with wild encounters are selectable; the cursor snaps between them.
 - 📍 **Exact source identity** — floors, caves, gates, buildings, and Pokémon Centers are never blended. `-- ROUTE 4 POKÉMON CENTER` stays honest about being an interior.
 - 📍 **You are here** — a blinking white marker shows your current location on Kanto, even where that spot has no wild encounters.
+- 👀 **Walking HUD** — while exploring, a top-right panel lists the current area's LAND and WATER species with their exact level ranges; it hides itself in menus and battles.
 - 🌿 **LAND and 🌊 WATER/SURF as separate views** — no deceptive merged tables.
 - 📏 **Compact level ranges, full odds on demand** — `ZUBAT Lv. 8-10` up top, then every exact level with its chance per movement step.
 - 🔍 **SELECT opens the complete list** — catches every encounter source, including any that lack Town Map coordinates.
@@ -41,7 +42,7 @@ The mod is read-only: it never touches saves, encounter mechanics, or link state
 ## Install
 
 1. Open **MODS** in Gen1Recomp (`F10` on desktop).
-2. **Import mod .zip** and select `encounter_guide-0.3.0.zip`.
+2. **Import mod .zip** and select `encounter_guide-0.4.0.zip`.
 3. Enable **Encounter Guide**.
 
 Works on desktop and Android. Requires an imported Pokémon Red, Blue, or Yellow ROM.
@@ -78,9 +79,10 @@ START → PKMN MAP
 │   ├── model.lua          # source grouping, methods, levels, buckets, odds
 │   ├── names.lua          # player-facing map/source labels
 │   ├── screens.lua        # ListMenu-based area/source/method/species screens
-│   └── map_screen.lua     # Town Map viewer: ROM tiles, cursor, markers, controls
+│   ├── map_screen.lua     # Town Map viewer: ROM tiles, cursor, markers, controls
+│   └── hud.lua            # walking HUD: per-area species panel via render.hud
 ├── tools/bundle.py        # deterministic bundler: lib/ → main.lua
-├── tests/                 # LÖVE test suite (7 files, fixtures + live Blue cache)
+├── tests/                 # LÖVE test suite (8 files, fixtures + live Blue cache)
 ├── manifest.json          # mod metadata (id: encounter_guide)
 ├── mod.card               # launcher-facing description
 └── dist/                  # importable release ZIPs
@@ -100,10 +102,10 @@ python3 tools/bundle.py
 # official mod validation, ROM-content lint, and packaging
 modkit validate --base fixture --strict .
 modkit lint .
-modkit pack -o dist/encounter_guide-0.3.0.zip .
+modkit pack -o dist/encounter_guide-0.4.0.zip .
 ```
 
-Every release gate runs before tagging: **7/7 test files green** → strict loader validation → no-ROM-content lint → clean archive → live in-game smoke test.
+Every release gate runs before tagging: **8/8 test files green** → strict loader validation → no-ROM-content lint → clean archive → live in-game smoke test.
 
 ## Scope
 
@@ -116,6 +118,7 @@ Every release gate runs before tagging: **7/7 test files green** → strict load
 - [x] v0.1.1 — package-safe single-file entry (fixes installed-ZIP crash)
 - [x] v0.2.0 — map-first Kanto navigation on ROM-generated artwork
 - [x] v0.3.0 — PKMN MAP menu entry + blinking player-position marker
+- [x] v0.4.0 — walking HUD with per-area species and level ranges
 - [ ] Red/Yellow data pass on real caches
 - [ ] Fishing as its own method
 

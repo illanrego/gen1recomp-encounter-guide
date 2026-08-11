@@ -16,6 +16,28 @@ local function floorKey(mapId)
   return 50
 end
 
+local function methodsFor(data, definition)
+  local methods = {}
+  if hasSlots(definition.grass) then
+    methods.land = Model.summarizeMethod(definition.grass, data.pokemon,
+      definition.grass.buckets or (data.constants or {}).encounterBuckets)
+  end
+  if hasSlots(definition.water) then
+    methods.water = Model.summarizeMethod(definition.water, data.pokemon,
+      definition.water.buckets or (data.constants or {}).encounterBuckets)
+  end
+  return methods
+end
+
+function Model.mapSummary(data, mapId)
+  if not mapId then return nil end
+  local definition = ((data or {}).encounters or {})[mapId]
+  if not definition then return nil end
+  local methods = methodsFor(data, definition)
+  if not (methods.land or methods.water) then return nil end
+  return methods
+end
+
 function Model.summarizeMethod(method, pokemon, buckets)
   local rate = method.rate or 0
   local total = (buckets and buckets[#buckets]) or 256
@@ -85,15 +107,7 @@ function Model.buildAreas(data)
         areasByKey[key] = area
         areas[#areas + 1] = area
       end
-      local methods = {}
-      if hasSlots(definition.grass) then
-        methods.land = Model.summarizeMethod(definition.grass, data.pokemon,
-          definition.grass.buckets or (data.constants or {}).encounterBuckets)
-      end
-      if hasSlots(definition.water) then
-        methods.water = Model.summarizeMethod(definition.water, data.pokemon,
-          definition.water.buckets or (data.constants or {}).encounterBuckets)
-      end
+      local methods = methodsFor(data, definition)
       area.sources[#area.sources + 1] = {
         mapId = mapId,
         label = Names.map(mapId),

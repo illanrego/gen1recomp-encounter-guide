@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0 — 2026-08-11
+
+- Adds a walking HUD: while you're on a map with wild encounters, a small top-right panel lists the LAND and WATER species with their exact level ranges, cached per map.
+- The HUD only appears during overworld play — never over menus, battles, or the title screen.
+
 ## 0.3.0 — 2026-08-11
 
 - Renames the START menu row to PKMN MAP, matching the game's own battle-menu abbreviation.

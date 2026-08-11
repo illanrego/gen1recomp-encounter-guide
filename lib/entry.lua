@@ -6,6 +6,7 @@ local SCREENS = {
   method = "EncounterGuideMethod",
   species = "EncounterGuideSpecies",
 }
+local entryHud
 
 return function(mod)
   mod.content.screens:register(SCREENS.map, {
@@ -49,5 +50,11 @@ return function(mod)
       label = "PKMN MAP",
       onSelect = function() mod.ui.push(game, SCREENS.map) end,
     })
+  end)
+
+  mod.hooks:wrap("render.hud", function(next, game, viewport)
+    if next then next(game, viewport) end
+    if not entryHud then entryHud = Hud.new(mod, game, {}) end
+    entryHud:draw(viewport)
   end)
 end

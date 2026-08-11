@@ -1,12 +1,12 @@
 local entry = assert(loadfile(os.getenv("ENCOUNTER_GUIDE_ROOT") .. "/main.lua"))
 
-local registeredScreens, wrappedHook = {}, nil
+local registeredScreens, wrappedHooks = {}, {}
 local mod = {
   content = { screens = { register = function(_, id, definition)
     registeredScreens[id] = definition
   end } },
   hooks = { wrap = function(_, hook, callback)
-    wrappedHook = { hook = hook, callback = callback }
+    wrappedHooks[hook] = callback
   end },
   ui = {
     insertBefore = function(items, label, item)
@@ -27,13 +27,30 @@ assert(registeredScreens.EncounterGuideArea, "main must register the selected-ar
 assert(registeredScreens.EncounterGuideSource, "main must register the source/method screen")
 assert(registeredScreens.EncounterGuideMethod, "main must register the method species-list screen")
 assert(registeredScreens.EncounterGuideSpecies, "main must register the exact species screen")
-assert(wrappedHook and wrappedHook.hook == "ui.start_menu.items", "main must extend the START menu through its public hook")
+assert(wrappedHooks["ui.start_menu.items"], "main must extend the START menu through its public hook")
 
 local game = {}
-local output = wrappedHook.callback(function(_, items) return items end, game, {
+local output = wrappedHooks["ui.start_menu.items"](function(_, items) return items end, game, {
   { label = "ITEM" }, { label = "SAVE" },
 })
 assert(output[2].label == "PKMN MAP", "PKMN MAP must appear before SAVE")
 assert(output[3].label == "SAVE", "the existing SAVE entry must be preserved")
 output[2].onSelect()
 assert(game.pushedScreen == "EncounterGuideMap", "PKMN MAP must open the Kanto encounter map")
+
+assert(wrappedHooks["render.hud"], "main must wrap the render.hud hook for the walking HUD")
+local nextCalled = false
+local hudGame = {
+  data = {
+    encounters = { ROUTE_1 = { grass = { rate = 128, slots = { { species = "PIDGEY", level = 2 } } } } },
+    field = { townMap = { locations = {} } },
+    pokemon = { PIDGEY = { name = "PIDGEY" } },
+    constants = { encounterBuckets = { 128, 256 } },
+  },
+  overworld = { map = { id = "ROUTE_1" } },
+  stack = { states = { { isOverworld = true, map = { id = "ROUTE_1" } }, { isOpaque = true } } },
+}
+wrappedHooks["render.hud"](function() nextCalled = true end, hudGame,
+  { gameX = 0, gameY = 0, gameWidth = 160, gameHeight = 144 })
+assert(nextCalled, "the render.hud wrap must preserve the hook chain")
+assert(hudGame.data.encounters.ROUTE_1.grass.slots[1].level == 2, "the render.hud wrap must not mutate game data")

@@ -1,0 +1,161 @@
+local Hud = require("lib.hud")
+
+local function eq(actual, expected, message)
+  assert(actual == expected,
+    (message or "values differ") .. ": expected " .. tostring(expected) .. ", got " .. tostring(actual))
+end
+
+local function makeData()
+  local forestSlots = {}
+  for i = 1, 7 do forestSlots[#forestSlots + 1] = { species = "MON_" .. i, level = 3 } end
+  return {
+    encounters = {
+      ROUTE_22 = {
+        grass = { rate = 128, slots = {
+          { species = "MANKEY", level = 3 }, { species = "MANKEY", level = 5 },
+          { species = "SPEAROW", level = 3 },
+        } },
+        water = { rate = 64, slots = { { species = "POLIWAG", level = 5 } } },
+      },
+      ROUTE_1 = { grass = { rate = 128, slots = { { species = "PIDGEY", level = 2 } } } },
+      ROUTE_19 = { water = { rate = 64, slots = { { species = "TENTACOOL", level = 5 } } } },
+      ROUTE_23 = {
+        grass = { rate = 128, slots = {
+          { species = "A1", level = 3 }, { species = "A2", level = 3 },
+          { species = "A3", level = 3 }, { species = "A4", level = 3 },
+        } },
+        water = { rate = 64, slots = {
+          { species = "B1", level = 5 }, { species = "B2", level = 5 },
+          { species = "B3", level = 5 },
+        } },
+      },
+      VIRIDIAN_FOREST = { grass = { rate = 128, slots = forestSlots } },
+      PALLET_TOWN = {},
+    },
+    field = { townMap = { locations = {} } },
+    pokemon = {
+      MANKEY = { name = "MANKEY" }, SPEAROW = { name = "SPEAROW" },
+      POLIWAG = { name = "POLIWAG" }, PIDGEY = { name = "PIDGEY" },
+      TENTACOOL = { name = "TENTACOOL" },
+      A1 = { name = "A1" }, A2 = { name = "A2" }, A3 = { name = "A3" }, A4 = { name = "A4" },
+      B1 = { name = "B1" }, B2 = { name = "B2" }, B3 = { name = "B3" },
+    },
+    constants = { encounterBuckets = { 128, 256 } },
+  }
+end
+
+-- pure formatting: honest method labeling, exact level ranges, truncation
+local both = Hud.linesFor(makeData(), "ROUTE_22")
+eq(both[1], "LAND", "maps with both methods label the land section")
+eq(both[2], "MANKEY 3-5", "species lines show the exact level range")
+eq(both[3], "SPEAROW 3", "single-level species show one level")
+eq(both[4], "WATER", "maps with both methods label the water section")
+eq(both[5], "POLIWAG 5", "water species follow their header")
+
+local landOnly = Hud.linesFor(makeData(), "ROUTE_1")
+eq(landOnly[1], "PIDGEY 2", "land-only maps skip the LAND header")
+
+local waterOnly = Hud.linesFor(makeData(), "ROUTE_19")
+eq(waterOnly[1], "WATER", "water-only maps must label the method")
+eq(waterOnly[2], "TENTACOOL 5", "water-only species follow their header")
+
+local overflow = Hud.linesFor(makeData(), "VIRIDIAN_FOREST")
+eq(#overflow, 6, "the HUD box is capped at six lines")
+eq(overflow[6], "+2 MORE", "hidden species are counted honestly")
+
+local dangling = Hud.linesFor(makeData(), "ROUTE_23")
+eq(#dangling, 6, "truncated mixed maps keep six lines")
+eq(dangling[6], "+3 MORE", "a cut section counts its hidden species")
+eq(dangling[5], "A4 3", "the last shown species is the final land species")
+for _, line in ipairs(dangling) do
+  assert(line ~= "WATER", "a section header with no visible species must never be shown")
+end
+
+eq(Hud.linesFor(makeData(), "PALLET_TOWN"), nil, "maps without encounters yield no HUD lines")
+eq(Hud.linesFor(makeData(), "UNKNOWN_MAP"), nil, "unknown maps yield no HUD lines")
+eq(Hud.linesFor(makeData(), nil), nil, "a nil map id yields no HUD lines")
+
+-- state guard: the HUD only exists while the overworld is the top state
+local function makeGame(mapId)
+  return {
+    data = makeData(),
+    overworld = { map = { id = mapId } },
+    stack = { states = { { isOverworld = true, map = { id = mapId } } } },
+  }
+end
+eq(Hud.activeMapId(makeGame("ROUTE_22")), "ROUTE_22", "walking exposes the current map id")
+local menuGame = makeGame("ROUTE_22")
+menuGame.stack.states = { { isOverworld = true }, { isOpaque = true } }
+eq(Hud.activeMapId(menuGame), nil, "a menu on top must hide the HUD")
+local battleGame = makeGame("ROUTE_22")
+battleGame.stack.states = { { isOverworld = true }, { isBattle = true } }
+eq(Hud.activeMapId(battleGame), nil, "a battle on top must hide the HUD")
+eq(Hud.activeMapId({}), nil, "no stack means no HUD")
+eq(Hud.activeMapId({ stack = { states = {} } }), nil, "an empty stack means no HUD")
+
+-- rendering: top-right box in GB-logical space, chain-safe, color restored
+local rectangles, labels, transforms, colors = {}, {}, {}, {}
+local graphics = {
+  push = function() end,
+  pop = function() end,
+  translate = function(x, y) transforms[#transforms + 1] = { "translate", x, y } end,
+  scale = function(s) transforms[#transforms + 1] = { "scale", s } end,
+  setColor = function(r, g, b, a) colors[#colors + 1] = { r, g, b, a } end,
+  rectangle = function(mode, x, y, w, h) rectangles[#rectangles + 1] = { mode, x, y, w, h } end,
+}
+local font = {
+  draw = function(text, x, y) labels[#labels + 1] = { text = text, x = x, y = y } end,
+  width = function(text) return #text * 8 end,
+}
+local mod = { ui = { Font = font } }
+local viewport = { gameX = 8, gameY = 16, gameWidth = 160, gameHeight = 144 }
+
+local hud = Hud.new(mod, makeGame("ROUTE_1"), { graphics = graphics, font = font })
+hud:draw(viewport)
+eq(transforms[1][1], "translate", "the HUD maps into the GB letterbox origin")
+eq(transforms[1][2], 8, "translate x follows the letterbox origin")
+eq(transforms[1][3], 16, "translate y follows the letterbox origin")
+eq(transforms[2][1], "scale", "the HUD scales to GB-logical space")
+eq(transforms[2][2], 1, "an unzoomed 160px viewport scales 1:1")
+eq(#labels, 1, "one species line is drawn")
+eq(labels[1].text, "PIDGEY 2", "the drawn line is the formatted species")
+eq(labels[1].y, 2, "the first line sits below the box top padding")
+local boxW = font.width("PIDGEY 2") + 4
+eq(labels[1].x, 160 - boxW + 2, "text is drawn inside the top-right box")
+local fill = rectangles[1]
+eq(fill[1], "fill", "the HUD box is a filled panel")
+eq(fill[2], 160 - boxW, "the box hugs the right edge")
+eq(fill[3], 0, "the box sits at the top of the GB screen")
+local lastColor = colors[#colors]
+eq(lastColor[1], 1, "the HUD restores the default color (r)")
+eq(lastColor[2], 1, "the HUD restores the default color (g)")
+eq(lastColor[3], 1, "the HUD restores the default color (b)")
+
+-- caching: one summary per map, recomputed only on map change
+local calls = 0
+local cachedHud = Hud.new(mod, makeGame("ROUTE_1"), {
+  graphics = graphics, font = font,
+  summarize = function(data, mapId)
+    calls = calls + 1
+    if mapId == "ROUTE_1" then
+      return { land = { species = { { name = "PIDGEY", minLevel = 2, maxLevel = 2 } } } }
+    end
+    return { land = { species = { { name = "CATERPIE", minLevel = 3, maxLevel = 3 } } } }
+  end,
+})
+cachedHud:draw(viewport)
+cachedHud:draw(viewport)
+eq(calls, 1, "the HUD caches the current map's summary")
+cachedHud.game.overworld.map.id = "VIRIDIAN_FOREST"
+cachedHud.game.stack.states[1].map.id = "VIRIDIAN_FOREST"
+cachedHud:draw(viewport)
+eq(calls, 2, "the HUD recomputes when the map changes")
+
+-- empty and hidden states draw nothing
+local labelCount = #labels
+local emptyHud = Hud.new(mod, makeGame("PALLET_TOWN"), { graphics = graphics, font = font })
+emptyHud:draw(viewport)
+eq(#labels, labelCount, "maps without encounters draw no HUD")
+local noWorldHud = Hud.new(mod, menuGame, { graphics = graphics, font = font })
+noWorldHud:draw(viewport)
+eq(#labels, labelCount, "a menu on top draws no HUD")

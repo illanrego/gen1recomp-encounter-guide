@@ -20,6 +20,7 @@ parts = [
     module_body("lib/model.lua", first_line='local Names = require("lib.names")', return_line="return Model"),
     module_body("lib/screens.lua", first_line='local Model = require("lib.model")', return_line="return Screens"),
     module_body("lib/map_screen.lua", return_line="return MapScreen"),
+    module_body("lib/hud.lua", first_line='local Model = require("lib.model")', return_line="return Hud"),
     module_body("lib/entry.lua"),
 ]
 
