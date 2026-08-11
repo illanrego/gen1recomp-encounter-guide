@@ -493,6 +493,7 @@ function Hud.new(mod, game, deps)
   self.game = game
   self.graphics = deps.graphics or love.graphics
   self.font = deps.font or mod.ui.Font
+  self.window = deps.window or love.graphics.getDimensions
   self.summarize = deps.summarize
   self.cache = { mapId = nil, lines = nil }
   return self
@@ -520,7 +521,18 @@ function Hud:draw(viewport)
   self:refresh()
   local lines = self.cache.lines
   if not lines or #lines == 0 then return end
-  if not (viewport and viewport.gameWidth) then return end
+  local ok, err = pcall(function()
+    self:drawBox(lines)
+  end)
+  if not ok then
+    -- the engine's hook runner also catches this; never crash the frame
+  end
+end
+
+-- Screen-space overlay: reset the transform like the engine's own touch
+-- overlay (a render pipeline such as a voxel mod can leave its camera
+-- transform active at render.hud time) and anchor to the window's top-right.
+function Hud:drawBox(lines)
   local graphics = self.graphics
   local font = self.font
   local maxWidth = 0
@@ -530,18 +542,17 @@ function Hud:draw(viewport)
   end
   local boxWidth = maxWidth + 4
   local boxHeight = #lines * 8 + 4
-  local scaleU = viewport.gameWidth / 160
-  graphics.push()
-  graphics.translate(viewport.gameX or 0, viewport.gameY or 0)
-  graphics.scale(scaleU, scaleU)
+  local windowWidth, windowHeight = self.window()
+  graphics.push("all")
+  graphics.origin()
   graphics.setColor(1, 1, 1, 1)
-  graphics.rectangle("fill", 160 - boxWidth, 0, boxWidth, boxHeight)
+  graphics.rectangle("fill", windowWidth - boxWidth - 2, 2, boxWidth, boxHeight)
   graphics.setColor(0, 0, 0, 1)
-  graphics.rectangle("line", 160 - boxWidth + 0.5, 0.5, boxWidth - 1, boxHeight - 1)
+  graphics.rectangle("line", windowWidth - boxWidth - 2 + 0.5, 2.5, boxWidth - 1, boxHeight - 1)
   for index, line in ipairs(lines) do
-    font.draw(line, 160 - boxWidth + 2, 2 + (index - 1) * 8)
+    font.draw(line, windowWidth - boxWidth - 2 + 2, 2 + 2 + (index - 1) * 8)
   end
-  graphics.pop()
+  graphics.pop("all")
   graphics.setColor(1, 1, 1, 1)
 end
 

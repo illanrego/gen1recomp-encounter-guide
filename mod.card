@@ -15,7 +15,7 @@ return {
       "per-species level ranges and exact per-level chance per movement step",
     },
     known = {
-      "v0.4.0 covers walking and Surf encounter tables only; fishing, static, gift, trade, and prize Pokémon are not represented",
+      "v0.4.1 covers walking and Surf encounter tables only; fishing, static, gift, trade, and prize Pokémon are not represented",
       "the guide reads data when opened; reopen it after enabling a mod that changes encounter tables",
     },
   },

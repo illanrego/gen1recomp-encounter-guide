@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1 — 2026-08-11
+
+- Fixes the walking HUD being invisible whenever a render pipeline (such as the Dramatic Shape voxel mod) leaves its camera transform active: the box now resets the graphics transform like the engine's own touch overlay and anchors to the window's top-right corner.
+
 ## 0.4.0 — 2026-08-11
 
 - Adds a walking HUD: while you're on a map with wild encounters, a small top-right panel lists the LAND and WATER species with their exact level ranges, cached per map.

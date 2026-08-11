@@ -42,7 +42,7 @@ The mod is read-only: it never touches saves, encounter mechanics, or link state
 ## Install
 
 1. Open **MODS** in Gen1Recomp (`F10` on desktop).
-2. **Import mod .zip** and select `encounter_guide-0.4.0.zip`.
+2. **Import mod .zip** and select `encounter_guide-0.4.1.zip`.
 3. Enable **Encounter Guide**.
 
 Works on desktop and Android. Requires an imported Pokémon Red, Blue, or Yellow ROM.
@@ -102,7 +102,7 @@ python3 tools/bundle.py
 # official mod validation, ROM-content lint, and packaging
 modkit validate --base fixture --strict .
 modkit lint .
-modkit pack -o dist/encounter_guide-0.4.0.zip .
+modkit pack -o dist/encounter_guide-0.4.1.zip .
 ```
 
 Every release gate runs before tagging: **8/8 test files green** → strict loader validation → no-ROM-content lint → clean archive → live in-game smoke test.
