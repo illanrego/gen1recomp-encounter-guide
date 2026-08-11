@@ -33,7 +33,7 @@ local game = {}
 local output = wrappedHook.callback(function(_, items) return items end, game, {
   { label = "ITEM" }, { label = "SAVE" },
 })
-assert(output[2].label == "ENCOUNTERS", "ENCOUNTERS must appear before SAVE")
+assert(output[2].label == "PKMN MAP", "PKMN MAP must appear before SAVE")
 assert(output[3].label == "SAVE", "the existing SAVE entry must be preserved")
 output[2].onSelect()
-assert(game.pushedScreen == "EncounterGuideMap", "ENCOUNTERS must open the Kanto encounter map")
+assert(game.pushedScreen == "EncounterGuideMap", "PKMN MAP must open the Kanto encounter map")

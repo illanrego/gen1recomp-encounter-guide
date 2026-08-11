@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0 — 2026-08-11
+
+- Renames the START menu row to PKMN MAP, matching the game's own battle-menu abbreviation.
+- Highlights the player's current location on the Kanto map with a blinking white marker, even where that spot has no wild encounters.
+
 ## 0.2.0 — 2026-08-09
 
 - Opens ENCOUNTERS on the imported ROM's Kanto Town Map.

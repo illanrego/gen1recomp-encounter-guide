@@ -46,7 +46,7 @@ return function(mod)
     local out = next(game, items)
     if type(out) ~= "table" then return out end
     return mod.ui.insertBefore(out, "SAVE", {
-      label = "ENCOUNTERS",
+      label = "PKMN MAP",
       onSelect = function() mod.ui.push(game, SCREENS.map) end,
     })
   end)

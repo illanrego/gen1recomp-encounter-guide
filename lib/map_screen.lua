@@ -27,6 +27,16 @@ local function loadBackground(graphics, game)
   return { image = image, quads = quads, map = definition.map, cursor = cursor }
 end
 
+function MapScreen.playerPosition(game, currentMapId)
+  if not currentMapId then return nil end
+  local townMap = (((game or {}).data or {}).field or {}).townMap or {}
+  local location = (townMap.locations or {})[currentMapId]
+  if location and location.x ~= nil and location.y ~= nil then
+    return { x = location.x, y = location.y }
+  end
+  return nil
+end
+
 function MapScreen.new(mod, game, areas, deps)
   deps = deps or {}
   local self = setmetatable({}, MapScreen)
@@ -50,6 +60,7 @@ function MapScreen.new(mod, game, areas, deps)
       end
     end
   end
+  self.player = MapScreen.playerPosition(game, currentMapId)
   self.blink = 0
   self.background = loadBackground(self.graphics, game)
   return self
@@ -112,6 +123,14 @@ function MapScreen:draw()
   for _, marker in ipairs(self.locations) do
     local markerX, markerY = marker.x * 8 + 16, marker.y * 8 + 8
     graphics.rectangle("fill", markerX + 2, markerY + 2, 4, 4)
+  end
+
+  if self.player and self.blink < 16 then
+    local playerX, playerY = self.player.x * 8 + 16, self.player.y * 8 + 8
+    graphics.setColor(0, 0, 0, 1)
+    graphics.rectangle("fill", playerX + 1, playerY + 1, 6, 6)
+    graphics.setColor(1, 1, 1, 1)
+    graphics.rectangle("fill", playerX + 2, playerY + 2, 4, 4)
   end
 
   if location then

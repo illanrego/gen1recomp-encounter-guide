@@ -10,13 +10,14 @@
 
 Plain encounter lists answer *“what appears here?”* — but never *“where is here?”* Without the map, a list of routes and floors is a phone book you can't navigate. This guide makes Kanto itself the menu:
 
-> **START → ENCOUNTERS** drops you on the imported ROM's own Town Map. D-pad between glowing markers, press **A**, and you're inside that location's exact encounter tables — `-- MT. MOON 1F`, `-- MT. MOON B1F`, `-- MT. MOON B2F` as separate, never-merged sources.
+> **START → PKMN MAP** drops you on the imported ROM's own Town Map. D-pad between glowing markers, press **A**, and you're inside that location's exact encounter tables — `-- MT. MOON 1F`, `-- MT. MOON B1F`, `-- MT. MOON B2F` as separate, never-merged sources.
 
 ## Features
 
 - 🗺️ **The real Kanto map** — artwork and coordinates come from your locally imported ROM. Nothing is bundled or redrawn.
 - 🎯 **Map-first navigation** — only locations with wild encounters are selectable; the cursor snaps between them.
 - 📍 **Exact source identity** — floors, caves, gates, buildings, and Pokémon Centers are never blended. `-- ROUTE 4 POKÉMON CENTER` stays honest about being an interior.
+- 📍 **You are here** — a blinking white marker shows your current location on Kanto, even where that spot has no wild encounters.
 - 🌿 **LAND and 🌊 WATER/SURF as separate views** — no deceptive merged tables.
 - 📏 **Compact level ranges, full odds on demand** — `ZUBAT Lv. 8-10` up top, then every exact level with its chance per movement step.
 - 🔍 **SELECT opens the complete list** — catches every encounter source, including any that lack Town Map coordinates.
@@ -40,7 +41,7 @@ The mod is read-only: it never touches saves, encounter mechanics, or link state
 ## Install
 
 1. Open **MODS** in Gen1Recomp (`F10` on desktop).
-2. **Import mod .zip** and select `encounter_guide-0.2.0.zip`.
+2. **Import mod .zip** and select `encounter_guide-0.3.0.zip`.
 3. Enable **Encounter Guide**.
 
 Works on desktop and Android. Requires an imported Pokémon Red, Blue, or Yellow ROM.
@@ -58,7 +59,7 @@ Works on desktop and Android. Requires an imported Pokémon Red, Blue, or Yellow
 | **B** | Back one level |
 
 ```text
-START → ENCOUNTERS
+START → PKMN MAP
   → KANTO MAP                (D-pad, A to select)
     → MT. MOON               (grouped Town Map marker)
       → -- MT. MOON 1F       (exact source, always separate)
@@ -99,7 +100,7 @@ python3 tools/bundle.py
 # official mod validation, ROM-content lint, and packaging
 modkit validate --base fixture --strict .
 modkit lint .
-modkit pack -o dist/encounter_guide-0.2.0.zip .
+modkit pack -o dist/encounter_guide-0.3.0.zip .
 ```
 
 Every release gate runs before tagging: **7/7 test files green** → strict loader validation → no-ROM-content lint → clean archive → live in-game smoke test.
@@ -114,9 +115,9 @@ Every release gate runs before tagging: **7/7 test files green** → strict load
 - [x] v0.1.0 — exact-source area browser, LAND/WATER separation, odds
 - [x] v0.1.1 — package-safe single-file entry (fixes installed-ZIP crash)
 - [x] v0.2.0 — map-first Kanto navigation on ROM-generated artwork
+- [x] v0.3.0 — PKMN MAP menu entry + blinking player-position marker
 - [ ] Red/Yellow data pass on real caches
 - [ ] Fishing as its own method
-- [ ] Player-position highlight when the current map is off-screen
 
 ## Credits
 
