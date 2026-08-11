@@ -19,6 +19,8 @@ Plain encounter lists answer *“what appears here?”* — but never *“where 
 - 📍 **Exact source identity** — floors, caves, gates, buildings, and Pokémon Centers are never blended. `-- ROUTE 4 POKÉMON CENTER` stays honest about being an interior.
 - 📍 **You are here** — a blinking white marker shows your current location on Kanto, even where that spot has no wild encounters.
 - 👀 **Walking HUD** — while exploring, a top-right panel lists the current area's LAND and WATER species with their exact level ranges; it hides itself in menus and battles.
+- 🎚️ **HUD modes** — AUTO (only while standing on grass or water, showing just that table), ALWAYS, or OFF, from the Options menu or the **H** key.
+- ⚪ **Owned markers** — caught Pokémon carry the Pokédex ball, on the walking HUD and in every PKMN MAP species list.
 - 🌿 **LAND and 🌊 WATER/SURF as separate views** — no deceptive merged tables.
 - 📏 **Compact level ranges, full odds on demand** — `ZUBAT Lv. 8-10` up top, then every exact level with its chance per movement step.
 - 🔍 **SELECT opens the complete list** — catches every encounter source, including any that lack Town Map coordinates.
@@ -42,7 +44,7 @@ The mod is read-only: it never touches saves, encounter mechanics, or link state
 ## Install
 
 1. Open **MODS** in Gen1Recomp (`F10` on desktop).
-2. **Import mod .zip** and select `encounter_guide-0.4.1.zip`.
+2. **Import mod .zip** and select `encounter_guide-0.5.0.zip`.
 3. Enable **Encounter Guide**.
 
 Works on desktop and Android. Requires an imported Pokémon Red, Blue, or Yellow ROM.
@@ -58,6 +60,7 @@ Works on desktop and Android. Requires an imported Pokémon Red, Blue, or Yellow
 | **A** (in lists) | Drill down: source → LAND/WATER → species → levels |
 | **SELECT** | Jump to the complete location list (incl. unmapped sources) |
 | **B** | Back one level |
+| **H** | Cycle the walking HUD: AUTO → ALWAYS → OFF |
 
 ```text
 START → PKMN MAP
@@ -102,7 +105,7 @@ python3 tools/bundle.py
 # official mod validation, ROM-content lint, and packaging
 modkit validate --base fixture --strict .
 modkit lint .
-modkit pack -o dist/encounter_guide-0.4.1.zip .
+modkit pack -o dist/encounter_guide-0.5.0.zip .
 ```
 
 Every release gate runs before tagging: **8/8 test files green** → strict loader validation → no-ROM-content lint → clean archive → live in-game smoke test.
@@ -119,6 +122,8 @@ Every release gate runs before tagging: **8/8 test files green** → strict load
 - [x] v0.2.0 — map-first Kanto navigation on ROM-generated artwork
 - [x] v0.3.0 — PKMN MAP menu entry + blinking player-position marker
 - [x] v0.4.0 — walking HUD with per-area species and level ranges
+- [x] v0.4.1 — HUD visible under render pipelines (voxel mods)
+- [x] v0.5.0 — HUD modes (AUTO/ALWAYS/OFF + H key + options menu) and owned-ball markers
 - [ ] Red/Yellow data pass on real caches
 - [ ] Fishing as its own method
 

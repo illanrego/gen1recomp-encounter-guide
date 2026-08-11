@@ -79,12 +79,14 @@ end
 
 function Screens.newMethod(mod, game, source, methodName)
   local summary = source and source.methods and source.methods[methodName] or { species = {} }
+  local owned = (((game or {}).save or {}).pokedex or {}).owned or {}
   local items = {}
   for _, species in ipairs(summary.species or {}) do
     items[#items + 1] = {
       label = species.name,
       right = levelRange(species),
       value = species,
+      ball = owned[species.speciesId] == true,
     }
   end
   local title = ((source and source.label) or "SOURCE") .. " " .. (methodName == "water" and "WATER" or "LAND")

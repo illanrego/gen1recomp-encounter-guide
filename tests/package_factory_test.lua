@@ -72,6 +72,15 @@ local hudOk, hudErr = pcall(wrappedHooks["render.hud"], function() hudNext = tru
   data = { encounters = {}, field = { townMap = { locations = {} } }, pokemon = {}, constants = {} },
   overworld = { map = { id = "ROUTE_1" } },
   stack = { states = { { isOverworld = true }, { isOpaque = true } } },
+  save = { options = {} },
 }, { gameX = 0, gameY = 0, gameWidth = 160, gameHeight = 144 })
 assert(hudOk, "installed render.hud wrap must be self-contained: " .. tostring(hudErr))
 assert(hudNext, "installed render.hud wrap must call through the hook chain")
+
+-- the options-row wrap must also work in the installed context
+local optionsNext = false
+local optionsOk, optionsErr = pcall(wrappedHooks["ui.options.rows"], function(_, rows) optionsNext = true return rows end, {
+  data = {}, save = { options = {} },
+}, {})
+assert(optionsOk, "installed ui.options.rows wrap must be self-contained: " .. tostring(optionsErr))
+assert(optionsNext, "installed ui.options.rows wrap must call through the hook chain")

@@ -49,8 +49,25 @@ local hudGame = {
   },
   overworld = { map = { id = "ROUTE_1" } },
   stack = { states = { { isOverworld = true, map = { id = "ROUTE_1" } }, { isOpaque = true } } },
+  save = { options = {} },
 }
 wrappedHooks["render.hud"](function() nextCalled = true end, hudGame,
   { gameX = 0, gameY = 0, gameWidth = 160, gameHeight = 144 })
 assert(nextCalled, "the render.hud wrap must preserve the hook chain")
 assert(hudGame.data.encounters.ROUTE_1.grass.slots[1].level == 2, "the render.hud wrap must not mutate game data")
+
+assert(wrappedHooks["ui.options.rows"], "main must extend the options menu for the HUD mode")
+local rowsOut = wrappedHooks["ui.options.rows"](function(_, rows) return rows end, hudGame, {
+  { id = "tilt", label = "TILT" },
+})
+local hudRow
+for _, row in ipairs(rowsOut) do
+  if row.id == "encounterGuideHud" then hudRow = row end
+end
+assert(hudRow, "the options menu gains an Encounter Guide HUD row")
+assert(hudRow.label == "ENC. GUIDE HUD", "the HUD row carries a readable label")
+assert(hudRow.value(hudGame) == "AUTO", "the HUD row shows the current mode")
+assert(hudRow.step(hudGame, 1) == true, "stepping right must apply")
+assert(hudRow.value(hudGame) == "ALWAYS", "stepping right cycles AUTO -> ALWAYS")
+assert(hudRow.step(hudGame, 1) == true and hudRow.value(hudGame) == "OFF", "stepping right cycles ALWAYS -> OFF")
+assert(hudRow.step(hudGame, -1) == true and hudRow.value(hudGame) == "ALWAYS", "stepping left cycles OFF -> ALWAYS")

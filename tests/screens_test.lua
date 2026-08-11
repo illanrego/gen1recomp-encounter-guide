@@ -25,6 +25,7 @@ local game = {
     pokemon = { ZUBAT = { name = "ZUBAT" }, GEODUDE = { name = "GEODUDE" } },
     constants = { encounterBuckets = { 128, 256 } },
   },
+  save = { pokedex = { owned = { ZUBAT = true } } },
 }
 
 local areasMenu = Screens.newAreas(mod, game)
@@ -51,6 +52,7 @@ assert(methodName == "land", "the method list retains the chosen method")
 local methodMenu = Screens.newMethod(mod, game, source, methodName)
 assert(methodMenu.items[1].label == "ZUBAT" and methodMenu.items[1].right == "Lv. 8-10",
   "method list keeps the truthful compact level range")
+assert(methodMenu.items[1].ball == true, "owned species get the Pokédex ball marker")
 methodMenu.onChoose(methodMenu.items[1])
 assert(pushes[#pushes].id == "EncounterGuideSpecies", "species selection opens exact odds")
 
@@ -62,3 +64,8 @@ local speciesMenu = Screens.newSpecies(mod, game, source, methodName, species)
 assert(speciesMenu.title == "ZUBAT", "detail page identifies the selected species")
 assert(speciesMenu.items[1].label == "Lv. 8" and speciesMenu.items[1].right == "1.95%",
   "detail page displays the exact per-step chance")
+
+local basement = area.sources[2]
+local unownedMenu = Screens.newMethod(mod, game, basement, "land")
+assert(unownedMenu.items[1].label == "GEODUDE", "the unowned species list still resolves")
+assert(unownedMenu.items[1].ball == false, "unowned species get no ball marker")

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0 — 2026-08-11
+
+- Adds HUD display modes: AUTO (show only while standing on tall grass or water, listing just that table), ALWAYS, and OFF — settable in the Options menu (ENC. GUIDE HUD) or cycled with the H key.
+- Marks owned Pokémon with the Pokédex ball both on the walking HUD and in the PKMN MAP species lists (from the save's caught dex).
+
 ## 0.4.1 — 2026-08-11
 
 - Fixes the walking HUD being invisible whenever a render pipeline (such as the Dramatic Shape voxel mod) leaves its camera transform active: the box now resets the graphics transform like the engine's own touch overlay and anchors to the window's top-right corner.
