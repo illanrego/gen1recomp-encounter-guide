@@ -1,5 +1,7 @@
 # 🗺️ Encounter Guide
 
+> **Superseded:** Encounter Guide now lives inside **[Will's Mod](https://github.com/illanrego/wills-mod)**, the combined catch-'em-all toolkit with the map-first guide plus owned-ball battle HUD. Please install and follow releases there.
+
 **A map-first wild-encounter guide for Gen1Recomp.** Walk the real Kanto Town Map, hop between encounter-bearing locations, and drill down to exact routes, floors, and buildings — with truthful level ranges and per-step odds derived from *your* imported ROM.
 
 ![API 2](https://img.shields.io/badge/mod%20API-2-8b5cf6) ![Profile: Content](https://img.shields.io/badge/profile-content-10b981) ![Read-only](https://img.shields.io/badge/read--only-✓-f59e0b) ![Tests](https://img.shields.io/badge/tests-8%20files%20passing-22c55e) ![Platform](https://img.shields.io/badge/platform-desktop%20%2B%20Android-3b82f6)
